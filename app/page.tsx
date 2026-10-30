@@ -23,9 +23,9 @@ function parseBulkText(text: string): { pet_name: string; quantity: number }[] {
 
 function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl p-4 flex flex-col gap-1">
-      <span className="text-xs text-slate-500 uppercase tracking-widest">{label}</span>
-      <span className="text-2xl font-bold text-white">{value}</span>
+    <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl p-3 sm:p-4 flex flex-col gap-1">
+      <span className="text-[10px] sm:text-xs text-slate-500 uppercase tracking-widest">{label}</span>
+      <span className="text-xl sm:text-2xl font-bold text-white">{value}</span>
     </div>
   )
 }
@@ -138,25 +138,25 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0f1117] text-white">
       {/* Topbar */}
-      <div className="border-b border-[#1e2130] px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="border-b border-[#1e2130] px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
           <span className="text-xl">🐾</span>
-          <span className="font-bold text-white tracking-tight">AdoptMe Inventory</span>
+          <span className="font-bold text-white tracking-tight text-sm sm:text-base">AdoptMe Inventory</span>
         </div>
-        <span className="text-xs text-slate-600">Supabase · Next.js</span>
+        <span className="text-xs text-slate-600 hidden sm:block">Supabase · Next.js</span>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
         {/* Toast */}
         {toast && (
-          <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg transition-all ${toast.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'}`}>
+          <div className={`fixed top-4 left-4 right-4 sm:left-auto sm:right-5 sm:w-auto z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg transition-all ${toast.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'}`}>
             {toast.type === 'success' ? '✓' : '✕'} {toast.msg}
           </div>
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <StatCard label="Accounts" value={accounts.length} />
           <StatCard label="Unique Pets" value={uniquePets} />
           <StatCard label="Total Pets" value={totalPets} />
@@ -208,7 +208,7 @@ export default function Home() {
         )}
 
         {/* Add Account + Add Pets */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Add Account */}
           <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl p-5 space-y-4">
             <p className="text-xs text-slate-500 uppercase tracking-widest">Add Account</p>
@@ -295,18 +295,18 @@ export default function Home() {
                 No accounts yet — add one above to get started.
               </div>
             )}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {accounts.map(account => {
               const pets = inventory.filter(i => i.account_id === account.id)
               const total = pets.reduce((s, p) => s + p.quantity, 0)
               return (
                 <div key={account.id} className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl overflow-hidden">
                   {/* Card Header */}
-                  <div className="flex items-center justify-between px-5 py-3 border-b border-[#2a2d3e]">
-                    <span className="text-sm font-semibold text-white">{account.name}</span>
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
-                      <span>{pets.length} types</span>
-                      <span className="text-indigo-400 font-mono font-semibold">{total} total</span>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a2d3e]">
+                    <span className="text-sm font-semibold text-white truncate max-w-[120px]">{account.name}</span>
+                    <div className="flex items-center gap-2 text-xs text-slate-500 shrink-0">
+                      <span className="hidden sm:inline">{pets.length} types</span>
+                      <span className="text-indigo-400 font-mono font-semibold">{total}</span>
                       <button onClick={() => deleteAccount(account.id, account.name)} className="px-2 py-1 text-xs text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">Delete</button>
                     </div>
                   </div>
@@ -322,8 +322,8 @@ export default function Home() {
                   {pets.length === 0 ? (
                     <div className="px-5 py-4 text-sm text-slate-600">No pets yet.</div>
                   ) : (
-                    <div className="overflow-y-auto max-h-72 p-5">
-                      <div className="grid grid-cols-2 gap-4">
+                    <div className="overflow-y-auto max-h-64 sm:max-h-72 p-3 sm:p-5">
+                      <div className="grid grid-cols-2 gap-3">
                         {pets.filter(row => row.pet_name.toLowerCase().includes((cardSearch[account.id] || '').toLowerCase())).map(row => (
                           <div key={row.id} className="bg-[#0f1117] border border-[#2a2d3e] rounded-lg p-3 flex flex-col gap-3 min-h-[90px]">
                             <span className="text-xs text-slate-300 font-medium leading-snug break-words">{row.pet_name}</span>
