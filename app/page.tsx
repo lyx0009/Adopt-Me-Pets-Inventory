@@ -43,12 +43,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const [cardSearch, setCardSearch] = useState<Record<string, string>>({})
+  const [initializing, setInitializing] = useState(true)
 
   async function fetchAll() {
     const { data: accs } = await supabase.from('accounts').select('*').order('name')
     const { data: inv } = await supabase.from('inventory').select('*, accounts(name)').order('pet_name')
     setAccounts(accs || [])
     setInventory((inv || []).map((r: any) => ({ ...r, account_name: r.accounts?.name })))
+    setInitializing(false)
   }
 
   useEffect(() => { fetchAll() }, [])
@@ -135,6 +137,15 @@ export default function Home() {
   const inputCls = "w-full bg-[#0f1117] border border-[#2a2d3e] rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
   const btnPrimary = "px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 cursor-pointer"
 
+  if (initializing) return (
+    <div className="min-h-screen bg-[#0f1117] flex flex-col items-center justify-center gap-4">
+      <span className="text-4xl animate-bounce">🐾</span>
+      <p className="text-white font-bold tracking-tight">Adopt Me Inventory</p>
+      <p className="text-slate-500 text-xs">by Lyx</p>
+      <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-[#0f1117] text-white">
       {/* Topbar */}
@@ -143,7 +154,7 @@ export default function Home() {
           <span className="text-xl">🐾</span>
           <span className="font-bold text-white tracking-tight text-sm sm:text-base">AdoptMe Inventory</span>
         </div>
-        <span className="text-xs text-slate-600 hidden sm:block">Supabase · Next.js</span>
+        <span className="text-xs text-slate-600 hidden sm:block">by Lyx</span>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
