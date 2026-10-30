@@ -37,7 +37,7 @@ export default function Home() {
   const [newAccount, setNewAccount] = useState('')
   const [selectedAccount, setSelectedAccount] = useState('')
   const [bulkText, setBulkText] = useState('')
-  const [bulkMode, setBulkMode] = useState(false)
+  const [bulkMode, setBulkMode] = useState<'single' | 'bulk' | 'replace'>('single')
   const [singlePet, setSinglePet] = useState('')
   const [singleQty, setSingleQty] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -104,6 +104,22 @@ export default function Home() {
     }
     setBulkText('')
     flash(`${parsed.length} pet(s) added!`)
+    setLoading(false)
+    fetchAll()
+  }
+
+  async function replaceAllStock() {
+    if (!selectedAccount) return flash('Select an account first', 'error')
+    const parsed = parseBulkText(bulkText)
+    if (!parsed.length) return flash('No valid lines found. Format: 2X PET NAME', 'error')
+    if (!confirm('This will delete all current pets in this account and replace with the new list. Continue?')) return
+    setLoading(true)
+    await supabase.from('inventory').delete().eq('account_id', selectedAccount)
+    for (const { pet_name, quantity } of parsed) {
+      await supabase.from('inventory').insert({ account_id: selectedAccount, pet_name, quantity })
+    }
+    setBulkText('')
+    flash(`Stock replaced with ${parsed.length} pet(s)!`)
     setLoading(false)
     fetchAll()
   }
@@ -250,8 +266,9 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <p className="text-xs text-slate-500 uppercase tracking-widest">Add Pets</p>
               <div className="flex bg-[#0f1117] border border-[#2a2d3e] rounded-lg p-0.5 text-xs">
-                <button onClick={() => setBulkMode(false)} className={`px-3 py-1 rounded-md transition-colors ${!bulkMode ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-white'}`}>Single</button>
-                <button onClick={() => setBulkMode(true)} className={`px-3 py-1 rounded-md transition-colors ${bulkMode ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-white'}`}>Bulk</button>
+                <button onClick={() => setBulkMode('single')} className={`px-3 py-1 rounded-md transition-colors ${bulkMode === 'single' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-white'}`}>Single</button>
+                <button onClick={() => setBulkMode('bulk')} className={`px-3 py-1 rounded-md transition-colors ${bulkMode === 'bulk' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-white'}`}>Bulk</button>
+                <button onClick={() => setBulkMode('replace')} className={`px-3 py-1 rounded-md transition-colors ${bulkMode === 'replace' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-white'}`}>Replace</button>
               </div>
             </div>
 
@@ -264,7 +281,7 @@ export default function Home() {
               {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
 
-            {!bulkMode ? (
+            {bulkMode === 'single' ? (
               <div className="flex gap-2">
                 <input
                   className={inputCls}
@@ -281,7 +298,7 @@ export default function Home() {
                 />
                 <button onClick={addSinglePet} disabled={loading} className={btnPrimary}>Add</button>
               </div>
-            ) : (
+            ) : bulkMode === 'bulk' ? (
               <div className="space-y-2">
                 <textarea
                   className={inputCls + ' h-32 resize-none font-mono'}
@@ -291,6 +308,19 @@ export default function Home() {
                 />
                 <button onClick={addBulkPets} disabled={loading} className={btnPrimary + ' w-full'}>
                   {loading ? 'Adding...' : 'Add Bulk Pets'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-orange-400/80">⚠ This will delete all current pets in the selected account and replace with the list below.</p>
+                <textarea
+                  className={inputCls + ' h-32 resize-none font-mono border-orange-500/40 focus:border-orange-500'}
+                  placeholder={"2X EMPEROR GORILLA\n1X NFR FROST FURY\n4X FR KANGAROO"}
+                  value={bulkText}
+                  onChange={e => setBulkText(e.target.value)}
+                />
+                <button onClick={replaceAllStock} disabled={loading} className="w-full py-2 bg-orange-600 hover:bg-orange-500 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 cursor-pointer">
+                  {loading ? 'Replacing...' : 'Replace All Stock'}
                 </button>
               </div>
             )}
